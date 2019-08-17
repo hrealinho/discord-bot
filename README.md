@@ -26,8 +26,7 @@ WORKING >
 ## Installation:
  - install npm (https://www.npmjs.com/get-npm);
  - navigate to project root directory;
- - `$ npm install ffmpeg`; [ or `$ choco install ffmpeg` if on windows (install
-   choco first https://chocolatey.org/install) ]
+ - `$ npm install ffmpeg`;
  - `$ npm install opusscript`;
  - `$ npm install`;
 
@@ -35,20 +34,20 @@ WORKING >
  - `$ npm start`
 
 ## Running for production:
-- `$ npm run production` [ uses pm2 (http://pm2.keymetrics.io/) ]
+- `$ npm run production`  uses pm2 (http://pm2.keymetrics.io/) 
 
 ## Running for development:
-  - `$ npm run dev` [ uses nodemon (https://nodemon.io/) ]
+  - `$ npm run dev`  uses nodemon (https://nodemon.io/) 
 
 ## Usage:
  - Set the tokens and desired prefix for the bot's commands
  as well as the bot name in the `config.json` file. Default prefix is `!`.
- To get the necessary tokens check https://discordapp.com/developers/docs/intro
+ To get the necessary tokens check (create your application and bot) https://discordapp.com/developers/docs/intro
  - Invite the bot to your server through this link: (with your client id) https://discordapp.com/oauth2/authorize?&client_id=CLIENT_ID&scope=bot&permissions=8
  - Run the bot.
  - The bot has now joined your server and is ready to be used.
 
- ## Commands
+ ## Bot commands
  - `help`
  - `play`
  - `stop`
@@ -57,4 +56,4 @@ WORKING >
  - ...
 
 
-Check discord.js docs (https://discord.js.org/#/docs/)
+Check discord.js docs (https://discord.js.org/#/docs/) to add to the code or change it.
