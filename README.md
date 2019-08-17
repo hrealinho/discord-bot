@@ -1,6 +1,7 @@
 # Discord Bot
-**NOT READY FOR PRODUCTION**
- Simple song playing discord bot
+**NOT READY FOR PRODUCTION** 
+ Simple song playing discord bot to test some APIs.
+ Currently using youtube to play the songs.
 
  ## FEATURES:
  - custom prefix
