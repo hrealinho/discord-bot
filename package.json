@@ -14,7 +14,6 @@
     "start": "node discord-bot.js",
     "production": "pm2 start discord-bot.js",
     "dev": "nodemon discord-bot.js",
-    "last": "nodemon my-bot.js",
     "test": "mocha --recursive tests --exit"
   },
   "dependencies": {
