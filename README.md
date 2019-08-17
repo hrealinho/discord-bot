@@ -1,6 +1,6 @@
 # Discord Bot
 **NOT READY FOR PRODUCTION** 
- Simple song playing discord bot to test some APIs.
+ Simple song playing discord bot to test some APIs. Yes, the code _does_ suck.
  Currently using youtube to play the songs.
 
  ## FEATURES:
