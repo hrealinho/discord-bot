@@ -8,27 +8,30 @@
  * @author Henrique Realinho
  */
 
-/** DEPENDENCIES **/
-const Discord = require('discord.js');
-const ytdl = require('ytdl-core');
-const YouTube = require('youtube-node');
-const fs = require('fs');
-// OTHER PACKAGES
+// TEST SERVER ID 610255655625818122
+
+/** CONFIG **/
 const {
   name,
 	prefix,
 	d_token,
   yt_token,
 } = require('./config.json');  // change config.json
+/** DEPENDENCIES **/
+const Discord = require('discord.js');
+const ytdl = require('ytdl-core');
+const YouTube = require('youtube-node');
+const fs = require('fs');
+// OTHER PACKAGES
 const Utils = require('./Utils/Utils.js');
+const actions = require('./modules/actions.js');
+
 
 // Init
 const client = new Discord.Client();
 const youTube = new YouTube();
 
 /** GLOBAL VARIABLES **/
-var servers = []; // connected servers
-var channels = []; // available channels within the connected servers
 var receivedMessages = []; // saves received messages
 
 //var songQueue = new Map(); // song queue for each guild
@@ -61,11 +64,13 @@ function setUsername(username) {
 
 /**
  * Set bot status and fill servers and channels data structures.
- *
+ * Changes username according to config.json file. Set a different avatar by
+ * uncommenting client.user.setAvatar(AVATAR_URL); and setting
+ * your own AVATAR_URL
  */
 function onLoad() {
     // set bot status and activity
-    //client.user.setAvatar('url');     // change bot's avatar if you want
+    //client.user.setAvatar(AVATAR_URL);     // change bot's avatar if you want
     client.user.setStatus('available');
     client.user.setPresence({
         game: {
@@ -74,7 +79,6 @@ function onLoad() {
     });
     // save servers the bot is connected to
     client.guilds.forEach((guild) => {
-
       const queueObj = {
         textChannel: null,
         voiceChannel: null,
@@ -85,30 +89,16 @@ function onLoad() {
         playing: false
       };
       queue.set(guild.id, queueObj);
-
-      const server = {
-        name: guild.name,
-        guild: guild
-      }
-      servers.push(server);
-
-      // list and save all channels
-      guild.channels.forEach((channel) => {
-          const channelObj = {
-            name: channel.name,
-            channel: channel
-          }
-          channels.push(channelObj);
-      });
     });
 }
 
 /**
- * Get guild with name name
+ * Get guild with name name and return the guild
  * @param {string} name
+ * @returns Guild
  */
 function getGuild(name) {
-    servers.forEach( (server) => {
+    client.guilds.forEach( (server) => {
         if (server.name.contains(name)){
           return server;
         }
@@ -116,14 +106,17 @@ function getGuild(name) {
 }
 
 /**
- * Get channel with name name within the given guild
+ * Get channel with name name within the given guild and return it
  * @param {string} name -
+ * @returns VoiceChannel
  */
 function getChannel(name) {
-    channels.forEach( (channel) => {
-      if (channel.name.contains(name)) {
-          return channel;
-      }
+    client.guilds.forEach( (guild) => {
+      guild.channels.forEach( (channel) => {
+        if (channel.name.contains(name)) {
+            return channel;
+        }
+      })
     });
 }
 
@@ -133,23 +126,18 @@ function getChannel(name) {
  */
 function reply(message) {
     // store received msgs
-    message.push(message);
+    receivedMessages.push(message);
 
     // send acknowledgement message
     message.react("👍");
 
     // Get every custom emoji from the server (if any) and react with each one
     message.guild.emojis.forEach(customEmoji => {
-        message.react(customEmoji).catch( (err) => {
+        message.react(customEmoji)
+        .catch( (err) => {
            if(err) console.log(err);
         });
     });
-    // If the message is "ping"
-   if (message.content === 'ping') {
-     // Send "pong" to the same channel
-     message.channel.send('pong');
-   }
-
 }
 
 /******************************* ON MESSAGE **********************************/
@@ -197,31 +185,31 @@ function processCommand (message) {
  */
 function execute(primaryCommand, arguments, message) {
     switch (primaryCommand) {
-      case "help":
+      case 'help':
         helpCommand(arguments, message);
         break;
-      case "multiply":
+      case 'multiply':
         multiplyCommand(arguments, message);
         break;
-      case "josue":
+      case 'josue':
         josueCommand(arguments, message);
         break;
-      case "leave":
+      case 'leave':
         leaveCommand(arguments, message);
         break;
-      case "add":
+      case 'add':
         addSongCommand(arguments, message);
         break;
-      case "skip":
+      case 'skip':
         skipCommand(arguments, message);
         break;
-      case "stop":
+      case 'stop':
         stopCommand(arguments, message);
         break;
-      case "queue":
+      case 'queue':
         playlistCommand(arguments, message);
         break;
-      case "play":
+      case 'play':
         playCommand(arguments, message);
         break;
       default:
@@ -259,7 +247,6 @@ function playSong(arguments, guild, channel, voiceChannel) {    // TODO
     const serverQueue = queue.get(guild.id).songs;
 
    if (queue.get(guild.id).playing) {
-      voiceChannel.connection.dispatcher.setVolume(VOLUME);
       return;
     }
     else if (arguments.length > 0 && (!serverQueue || Utils.isEmpty(serverQueue))) {      // TODO
@@ -369,6 +356,7 @@ function addSong(songName, message) {
  * @param {string} songName -
  * @param {Channel} channel -
  * @param {function} callback -
+ * @returns Song
  */
 function getSong(songName, channel, callback) {        // TODO
   var videoId, videoUrl;
@@ -519,25 +507,16 @@ function leaveCommand(arguments, message) {
     queue.set(channel.guild.id, queueObj);
 }
 
-
 /**
  *
  * @param {[string]} arguments -
  * @param {Message} message -
  */
 function helpCommand(arguments, message) {
-    if (arguments.length > 0) {
-        //receivedMessage.channel.send("It looks like you might need help with " + arguments)
-    } else {
-        //receivedMessage.channel.send("I'm not sure what you need help with. Try `" + prefix + "help [topic]`")
-    }
-    var str = "COMMANDS:\n";
-    str += "`" + prefix + "add 'song'` - Adds a song to the playlist\n";
-    str += "`" + prefix + "play` - Start playing\n";
-    str += "`" + prefix + "stop` - Stop playing\n";
-    str += "`" + prefix + "skip` - Skip current song if playing or the next song if not playing\n";
-    str += "`" + prefix + "leave` - Leave voice channel - resets playlist\n";
-    message.channel.send(str);
+    actions.help.execute(arguments, message.channel)
+      .then(
+        console.log('help command served')
+      );
 }
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -559,11 +538,6 @@ function josueCommand(arguments, message) {
 client.on("guildCreate", guild => {
     console.log("Joined a new guild: " + guild.name);
     // add to data structures
-    const server = {
-      name: guild.name,
-      guild: guild
-    }
-    servers.push(server);
     const queueObj = {
       textChannel: null,
       voiceChannel: null,
@@ -574,33 +548,12 @@ client.on("guildCreate", guild => {
       playing: false
     };
     queue.set(guild.id, queueObj);
-    // list and save all channels
-    guild.channels.forEach((channel) => {
-        const channelObj = {
-          name: channel.name,
-          channel: channel
-        }
-        channels.push(channelObj);
-    })
 })
 
 // removed from a guild
 client.on("guildDelete", guild => {
     console.log("Left a guild: " + guild.name);
-    //remove from guildArray
-    servers.forEach( (server) => {
-      if (server.id == guild.id) {
-        servers.delete(server);
-      }
-    });
-    guild.channels.forEach( (channel) => {
-      channels.forEach( (ch) => {
-        if (ch.id == channel.id) {
-          channels.delete(ch);
-        }
-      });
-    });
-
+    //remove guild
     queue.delete(guild.id);
 })
 
@@ -619,7 +572,6 @@ client.login(d_token).catch( (e) => {
   console.log('Error logging into discord');
   console.log(e);
 });
-
 // YOUTUBE API KEY
 youTube.setKey(yt_token);
 

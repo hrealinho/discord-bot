@@ -42,8 +42,10 @@ WORKING >
 ## Usage
  - Set the tokens and desired prefix for the bot's commands
  as well as the bot name in the `config.json` file. Default prefix is `!`.
- To get the necessary tokens check (create your application and bot) https://discordapp.com/developers/docs/intro
- - Invite the bot to your server through this link: (with your client id) https://discordapp.com/oauth2/authorize?&client_id=CLIENT_ID&scope=bot&permissions=8
+ To get the necessary tokens check https://discordapp.com/developers/docs/intro
+(create your application and bot)
+ - Invite the bot to your server through this link: https://discordapp.com/oauth2/authorize?&client_id=CLIENT_ID&scope=bot&permissions=8
+(with your client id)
  - Run the bot.
  - The bot has now joined your server and is ready to be used.
 
