@@ -242,8 +242,8 @@ function playCommand(arguments, message) {
       message.channel.send("You are not in a voice channel.");
     } else if (queue.get(message.guild.id).playing) {
       // if already playing, add song to queue
-      addSong(arguments.toString(), message);
-      //actions.add.execute(message, queue, arguments.toString(), queue.get(message.guild.id).channel);
+      //addSong(arguments.toString(), message);
+      actions.add.execute(message, queue, arguments.toString(), queue.get(message.guild.id).channel);
     } else {
       //playSong(arguments, message.guild, message.channel, message.member.voiceChannel);
       actions.play.execute(arguments, queue, message.guild, message.channel, message.member.voiceChannel);
