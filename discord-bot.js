@@ -25,20 +25,18 @@ const fs = require('fs');
 // OTHER PACKAGES
 const Utils = require('./Utils/Utils.js');
 const actions = require('./modules/actions.js');
-
+//const loadCommands = require('./modules/commands.js');
 
 // Init
 const client = new Discord.Client();
+client.commands = new Discord.Collection();
+
 const youTube = new YouTube();
 
 /** GLOBAL VARIABLES **/
-var receivedMessages = []; // saves received messages
+const receivedMessages = []; // saves received messages
 
-//var songQueue = new Map(); // song queue for each guild
-//var playing = new Map(); // map of songs playing for each guild
-//var play = new Map();
-
-var queue = new Map();
+const queue = new Map();
 
 /** CONSTANTS **/
 const VOLUME = 4; // volume (1-10)
@@ -49,17 +47,26 @@ const AVATAR_URL = __dirname + '/images/discord-logo.jpg';
 // ON READY
 client.on('ready', () => {
     console.log("Connected as " + client.user.tag);
-    if (client.user.username != name) {
-      setUsername(name);
-    }
     onLoad();
 });
 
-function setUsername(username) {
-    // Set username
+function setInfo() {
+  if (client.user.username != name) {
+    
+    // changes username according to config.json file
   client.user.setUsername(username)
     .then(user => console.log(`My new username is ${user.username}`))
     .catch(console.error);
+  }
+  // set bot status and activity
+  //client.user.setAvatar(AVATAR_URL);     // change bot's avatar if you want
+  client.user.setStatus('available');
+  client.user.setPresence({
+      game: {
+          name: 'with toilet paper | ' + prefix + 'help'
+      }
+  });
+
 }
 
 /**
@@ -69,27 +76,29 @@ function setUsername(username) {
  * your own AVATAR_URL
  */
 function onLoad() {
-    // set bot status and activity
-    //client.user.setAvatar(AVATAR_URL);     // change bot's avatar if you want
-    client.user.setStatus('available');
-    client.user.setPresence({
-        game: {
-            name: 'with toilet paper | ' + prefix + 'help'
-        }
-    });
-    // save servers the bot is connected to
-    client.guilds.forEach((guild) => {
-      const queueObj = {
-        textChannel: null,
-        voiceChannel: null,
-        connection: null,
-        songs: [],
-        play: null,
-        volume: VOLUME,
-        playing: false
-      };
-      queue.set(guild.id, queueObj);
-    });
+/*  
+  const commandFiles = fs.readdirSync('./modules/commands').filter(file => file.endsWith('.js'));
+  for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    client.commands.set(command.name, command);
+  }
+*/
+
+  setInfo();
+  // save servers the bot is connected to
+  client.guilds.forEach((guild) => {
+    const queueObj = {
+      textChannel: null,
+      voiceChannel: null,
+      connection: null,
+      songs: [],
+      play: null,
+      volume: VOLUME,
+      playing: false
+    };
+    queue.set(guild.id, queueObj);
+  });
+
 }
 
 /**
@@ -98,11 +107,11 @@ function onLoad() {
  * @returns Guild
  */
 function getGuild(name) {
-    client.guilds.forEach( (server) => {
-        if (server.name.contains(name)){
-          return server;
-        }
-    });
+  client.guilds.forEach( (server) => {
+      if (server.name.contains(name)){
+        return server;
+      }
+  });
 }
 
 /**
@@ -111,13 +120,13 @@ function getGuild(name) {
  * @returns VoiceChannel
  */
 function getChannel(name) {
-    client.guilds.forEach( (guild) => {
-      guild.channels.forEach( (channel) => {
-        if (channel.name.contains(name)) {
-            return channel;
-        }
-      })
-    });
+  client.guilds.forEach( (guild) => {
+    guild.channels.forEach( (channel) => {
+      if (channel.name.contains(name)) {
+          return channel;
+      }
+    })
+  });
 }
 
 /**
@@ -125,37 +134,37 @@ function getChannel(name) {
  * @param {Message} message - the received message
  */
 function reply(message) {
-    // store received msgs
-    receivedMessages.push(message);
+  // store received msgs
+  receivedMessages.push(message);
 
-    // send acknowledgement message
-    message.react("👍");
+  // send acknowledgement message
+  message.react("👍");
 
-    // Get every custom emoji from the server (if any) and react with each one
-    message.guild.emojis.forEach(customEmoji => {
-        message.react(customEmoji)
-        .catch( (err) => {
-           if(err) console.log(err);
-        });
-    });
+  // Get every custom emoji from the server (if any) and react with each one
+  message.guild.emojis.forEach(customEmoji => {
+      message.react(customEmoji)
+      .catch( (err) => {
+         if(err) console.log(err);
+      });
+  });
 }
 
 /******************************* ON MESSAGE **********************************/
 
 // ON MESSAGE
 client.on('message', (message) => {
-    // Prevent bot from responding to its own messages
-    if (message.author == client.user) {
-        return;
-    }
-     // check if the bot was tagged in the message
-    if (message.content.includes(client.user.toString())) {
-        reply(message);
-    }
-    // check for the prefix and process the command
-    if (message.content.startsWith(prefix)) {
-        processCommand(message);
-    }
+  // Prevent bot from responding to its own messages
+  if (message.author == client.user) {
+      return;
+  }
+   // check if the bot was tagged in the message
+  if (message.content.includes(client.user.toString())) {
+      reply(message);
+  }
+  // check for the prefix and process the command
+  if (message.content.startsWith(prefix)) {
+      processCommand(message);
+  }
 });
 
 /** PROCESSING COMMANDS **/
@@ -165,19 +174,20 @@ client.on('message', (message) => {
  * @param {Message} message - Discord.js received message with the command.
  */
 function processCommand (message) {
-    let fullCommand = message.content.substr(1); // remove the leading exclamation mark
-    let splitCommand = fullCommand.split(" "); // split the message up in to pieces for each space
-    let primaryCommand = splitCommand[0]; // the first word directly after the exclamation is the command
-    let arguments = splitCommand.slice(1); // all other words are arguments/parameters/options for the command
+  const fullCommand = message.content.substr(1); // remove the leading exclamation mark
+  const splitCommand = fullCommand.split(" "); // split the message up in to pieces for each space
+  const primaryCommand = splitCommand[0]; // the first word directly after the exclamation is the command
+  const arguments = splitCommand.slice(1); // all other words are arguments/parameters/options for the command
 
-    console.log("Command received: " + primaryCommand);
-    console.log("Arguments: " + arguments); // there may not be any arguments
-    // execute the command
-    execute(primaryCommand, arguments, message);
+  console.log("Command received: " + primaryCommand);
+  console.log("Arguments: " + arguments); // there may not be any arguments
+  // execute the command
+  execute(primaryCommand, arguments, message);
+
 }
 
 /**************************** CREATING COMMANDS *******************************/
-
+/*
 /**
  * Exec COMMANDS
  * @param {[string]} arguments -
@@ -212,11 +222,14 @@ function execute(primaryCommand, arguments, message) {
       case 'play':
         playCommand(arguments, message);
         break;
+      case 'p':
+        playCommand(arguments, message);
+        break;
       default:
         message.channel.send("I don't understand the command. Try `" + prefix + "help` to get a list of commands or `" + prefix + "josue`. \nPS > este bot é um bico");
     }
 }
-
+*/
 /**
  *
  * @param {[string]} arguments -
@@ -228,98 +241,15 @@ function playCommand(arguments, message) {
     } else if (!message.member.voiceChannel) {
       message.channel.send("You are not in a voice channel.");
     } else if (queue.get(message.guild.id).playing) {
-      message.channel.send("Already playing.\nAdd to playlist with `add <song>`");
+      // if already playing, add song to queue
+      addSong(arguments.toString(), message);
+      //actions.add.execute(message, queue, arguments.toString(), queue.get(message.guild.id).channel);
     } else {
-      playSong(arguments, message.guild, message.channel, message.member.voiceChannel);
+      //playSong(arguments, message.guild, message.channel, message.member.voiceChannel);
+      actions.play.execute(arguments, queue, message.guild, message.channel, message.member.voiceChannel);
     }
 }
 
-/**
- * Plays a song
- * Changes play, playing and queue data structures
- * @param {Guild} guild -
- * @param {Channel} channel -
- * @param {VoiceChannel} voiceChannel -
- */
-function playSong(arguments, guild, channel, voiceChannel) {    // TODO
-    var song;
-    // song queue for this server
-    const serverQueue = queue.get(guild.id).songs;
-
-   if (queue.get(guild.id).playing) {
-      return;
-    }
-    else if (arguments.length > 0 && (!serverQueue || Utils.isEmpty(serverQueue))) {      // TODO
-      //channel.send("`" + prefix + "play` has no arguments.\nAdd songs using `" + prefix + "add 'song'`");
-      getSong(arguments.toString(), channel, (songObj) => {
-        song = songObj;
-      }).then(
-      console.log(song));
-    }
-    else if (serverQueue) {
-      song = serverQueue.shift(); // song is a object with the song name and url
-    }
-    else { // lul
-      song = serverQueue.shift();
-    }
-
-    // youtube search: https://www.youtube.com/results?search_query=QUERY
-    // youtube watch video by id: https://www.youtube.com/watch?v=VIDEOID
-
-    join(voiceChannel , function (connection) {
-      // joined voice channel (or client was already in the voice channel)
-      const queueObj = {
-        textChannel: channel,
-        voiceChannel: voiceChannel,
-        connection: connection,
-        songs: serverQueue,
-        play: song,
-        volume: 5,
-        playing: true
-      };
-      queue.set(channel.guild.id, queueObj);
-
-      console.log("Now playing: " + song.name + " in " + song.url);
-      channel.send("Now playing: " + song.name);
-
-      // dispatcher to play the url using ytdl
-      const dispatcher = connection.playStream(ytdl(song.url.toString()))
-      .on('end', () => { // TODO
-        console.log('Music ended!');
-        if (Utils.isEmpty(queue.get(guild.id).songs)) {
-            console.log("Empty queue @ " + guild.name);
-            channel.send("Playlist is empty.");
-            return ;
-        }
-        playSong(arguments, guild, channel, voiceChannel);
-      })
-      .on('error', error => {  // play stream error
-        queue.get(guild.id).playing = false;
-        console.error(error);
-      });
-      dispatcher.setVolume(VOLUME/10);
-    });
-}
-
-/**
- * Join the voice channel and execute callback
- * @param {VoiceChannel} voiceChannel -
- * @param {function} callback -
- */
-function join(voiceChannel, callback) {
-    var channel = voiceChannel;
-
-    if (!channel) return console.error("The channel does not exist!");
-    channel.join()
-        .then( connection => {
-        // worked
-        console.log("Successfully connected. @ " + channel.guild.name);
-        callback(connection);
-    }).catch(e => {
-        // errored, log it to console
-        console.error(e);
-    });
-}
 
 /**
  * Add a song to a playlist
@@ -331,66 +261,12 @@ function join(voiceChannel, callback) {
       message.channel.send("Add what?\nUse `" + prefix + "add 'song'`");
     } else {
       const songName = Utils.join(arguments);
-      addSong(songName, message);
+      if (!songName) songName = arguments.toString();
+      actions.add.execute(message, queue, songName, queue.get(message.guild.id).channel);
+      //addSong(songName, message);
     }
 }
 
-/**
- *
- * @param {string} songName -
- * @param {Message} message -
- */
-function addSong(songName, message) {
-  var ytVideoId, videoUrl, song;
-
-  getSong(songName, message.channel, function (song) {
-    queue.get(message.guild.id).songs.push(song);
-    // TODO
-    console.log("Added song " + song.name + " to playlist @ " + message.guild.name);
-    message.channel.send("Added song " + song.name + " to playlist.");
-  });
-}
-
-/**
- *
- * @param {string} songName -
- * @param {Channel} channel -
- * @param {function} callback -
- * @returns Song
- */
-function getSong(songName, channel, callback) {        // TODO
-  var videoId, videoUrl;
-  var name;
-  // search for the song in youtube and get the first result to appear
-  youTube.search(songName, 1, function(error, result) {
-    if (error) {
-      console.log(error);
-    }
-    else {
-      //console.log(JSON.stringify(result, null, 2));
-      if (!result || !result.items[0]) {
-          channel.send("No song found.");
-          return;
-      }
-      // get video id from first result on the search
-      videoId = result.items[0].id.videoId;
-      if (!videoId) {
-          channel.send("No song  found.");
-          return;
-      }
-      name = result.items[0].snippet.title;
-      // build youtube video url
-      videoUrl = 'https://youtube.com/watch?v=' + videoId;
-      song = {
-          name: name,
-          url: videoUrl
-      };
-      console.log(song);
-      callback(song);
-      return song;
-    }
-  });
-}
 
 /**
  * Command to stop playing a song
@@ -401,7 +277,8 @@ function stopCommand(arguments, message) {
     var channel = message.channel;
     // channel.members.forEach( member => { });
     if (queue.get(channel.guild.id).playing) {
-      stopSong(channel.guild);
+      //stopSong(channel.guild);
+      actions.stop.execute(channel.guild, queue);
     }
     else {
       console.log("Not playing @ " + channel.guild.name);
@@ -410,26 +287,15 @@ function stopCommand(arguments, message) {
 }
 
 /**
- * Stop playing a song in a given guild.
- * @param {Guild} guild - the guild in which to stop the playing song
- */
-function stopSong(guild) {  // TODO
-    if (!queue.get(guild.id).playing) return;
-
-    const dispatcher = queue.get(guild.id).connection.dispatcher;
-    dispatcher.end();
-    queue.get(guild.id).playing = false;
-    queue.get(guild.id).play = null;
-}
-
-/**
  *
  * @param {[string]} arguments -
  * @param {Message} message -
  */
 function playlistCommand(arguments, message) {
-    if (queue.get(message.guild.id).play) {
-      message.channel.send("Now playing:\n - " + playing.get(message.guild.id).name + '\n');
+    actions.queue.execute(message, queue);
+    /*
+    if (queue.get(message.guild.id).playing) {
+      message.channel.send("Now playing:\n - " + queue.get(message.guild.id).play.name + '\n');
     }
 
     const songs = queue.get(message.guild.id).songs; // songQueue.get(message.guild.id);
@@ -444,6 +310,7 @@ function playlistCommand(arguments, message) {
         });
         message.channel.send(str);
     }
+    */
 }
 
 /**
@@ -452,35 +319,17 @@ function playlistCommand(arguments, message) {
  * @param {Message} message -
  */
 function skipCommand(arguments, message) {
-    if (Utils.isEmpty(queue.get(message.guild.id).songs))
+    var queueObj = queue.get(message.guild.id);
+    if (!queueObj.playing && Utils.isEmpty(queueObj.songs)) {
         message.channel.send("Playlist is empty.");
+    }
     else {
         const guild = message.guild;
         const channel = queue.get(message.guild.id).channel;
         const voiceChannel = queue.get(message.guild.id).voiceChannel;
-        skipSong(arguments, message, guild, channel, voiceChannel);
+        //skipSong(message, guild, message.channel, voiceChannel);
+        actions.skip.execute(queue, guild, message.channel, voiceChannel);
     }
-}
-
-/**
- *
- * @param {[string]} arguments -
- * @param {Guild} guild -
- * @param {Channel} channel -
- * @param {VoiceChannel} voiceChannel -
- */
-function skipSong(arguments, guild, channel, voiceChannel) {
-  // NOT WORKING - skips every song and empties playlist TODO
-    var queueObj = queue.get(guild.id);
-    if (!queueObj) return;
-    if (queueObj.playing) { // if its playing in the guild
-      queueObj.connection.dispatcher.end();
-    }
-    else { // if its not playing in the guild at the moment
-      queueObj.songs.shift();
-    }
-    console.log("Skipping song. @ " + channel.guild.name);
-    channel.send("Skipped.");
 }
 
 /**
@@ -489,6 +338,8 @@ function skipSong(arguments, guild, channel, voiceChannel) {
  * @param {Message} message -
  */
 function leaveCommand(arguments, message) {
+    actions.leave.execute(queue)
+  /*
     const queueObj = queue.get(message.guild.id);
 
     if (!queueObj.channel) return;
@@ -505,6 +356,7 @@ function leaveCommand(arguments, message) {
       playing: false
     };
     queue.set(channel.guild.id, queueObj);
+    */
 }
 
 /**
@@ -513,31 +365,14 @@ function leaveCommand(arguments, message) {
  * @param {Message} message -
  */
 function helpCommand(arguments, message) {
-    actions.help.execute(arguments, message.channel)
-      .then(
-        console.log('help command served')
-      );
+    actions.help.execute(arguments, message.channel);
 }
 ///////////////////////////////////////////////////////////////////////////////
-
-function josueCommand(arguments, message) {
-    // send a msg to a channel
-   var spamChannel = message.channel;
-    spamChannel.send("Fuck!\nYou can play me, soon.");
-// post img or file to a channel
-    // Provide a path to a local file
-    //const localFileAttachment = new Discord.Attachment(__dirname + '/data/image.png');
-    //spamChannel.send(localFileAttachment);
-
-    // URL to a file
-    const webAttachment = new Discord.Attachment('http://hd.wallpaperswide.com/thumbs/iron_man_3-t2.jpg');
-    spamChannel.send(webAttachment);
-}
 
 // joined a guild
 client.on("guildCreate", guild => {
     console.log("Joined a new guild: " + guild.name);
-    // add to data structures
+    // add to data structure
     const queueObj = {
       textChannel: null,
       voiceChannel: null,
@@ -553,7 +388,7 @@ client.on("guildCreate", guild => {
 // removed from a guild
 client.on("guildDelete", guild => {
     console.log("Left a guild: " + guild.name);
-    //remove guild
+    //remove guild from map
     queue.delete(guild.id);
 })
 
