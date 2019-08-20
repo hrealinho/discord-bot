@@ -56,7 +56,7 @@ WORKING >
   - `$ npm run dev`  uses nodemon (https://nodemon.io/) 
 
 ## Usage
-(create your application and bot)
+(create your application and bot at https://discordapp.com/developers/applications/ first)
  - Set the tokens and desired prefix for the bot's commands
  as well as the bot name in the `config.json` file. Default prefix is `!`.
  To get the necessary tokens check https://discordapp.com/developers/docs/intro
