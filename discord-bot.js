@@ -229,7 +229,7 @@ function execute(primaryCommand, arguments, message) {
         message.channel.send("I don't understand the command. Try `" + prefix + "help` to get a list of commands or `" + prefix + "josue`. \nPS > este bot é um bico");
     }
 }
-*/
+
 /**
  *
  * @param {[string]} arguments -
