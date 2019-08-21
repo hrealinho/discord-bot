@@ -2,7 +2,7 @@
  * Bot actions
  * @author Henrique Realinho
  */
-const Utils = require('../Utils/Utils.js');
+const Utils = require('./Utils/Utils.js');
 const Discord = require('discord.js');
 const ytdl = require('ytdl-core');
 const YouTube = require('youtube-node');
@@ -13,47 +13,10 @@ const {
 	yt_token
 } = require('../config.json');
 const VOLUME = 4; // volume (1-10)
+const getSong = require('./Utils/yt.js');
 
 const youTube = new YouTube();
 
-
-function getSong(queue, songName, channel, callback) {
-	var videoId, videoUrl, song;
-	var name;
-	// YOUTUBE TOKEN
-	youTube.setKey(yt_token);
-
-	// search for the song in youtube and get the first result to appear
-	youTube.search(songName, 1, function(error, result) {
-		if (error) {
-			console.log(error);
-		}
-		else {
-			//console.log(JSON.stringify(result, null, 2));
-			if (!result || !result.items[0]) {
-					channel.send("No song found.");
-					return;
-			}
-			// get video id from first result on the search
-			videoId = result.items[0].id.videoId;
-			if (!videoId) {
-					channel.send("No song  found.");
-					return;
-			}
-			name = result.items[0].snippet.title;
-			// build youtube video url
-			videoUrl = 'https://youtube.com/watch?v=' + videoId;
-			song = {
-					name: name,
-					url: videoUrl
-			};
-			callback(song);
-			return new Promise(function () {
-
-			});
-		}
-	});
-}
 
 
 var help = {    // working
@@ -145,7 +108,7 @@ var play = {
 };
 
 var add = {
-  name: 'stop',
+  name: 'add',
   usage: prefix + '`add <song>`',
   execute(message, queue, songName, channel) {
 		getSong(queue, songName, channel, function (song) {

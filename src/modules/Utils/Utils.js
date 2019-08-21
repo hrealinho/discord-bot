@@ -16,6 +16,8 @@ function isEmpty(obj) {
  */
 function join (args) {
    var res = "";
+   if (!args || args.length <= 1) return args;
+
    args.forEach( str => {
        res+=str + " ";
 
