@@ -3,6 +3,5 @@
   "prefix": "!",
   "name": "BOT_NAME",
   "oauth": "BOT_OAUTH",
-  "passes": 1,
   "yt_token": "YOUTUBE_TOKEN"
 }
