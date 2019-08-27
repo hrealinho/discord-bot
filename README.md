@@ -68,18 +68,18 @@ WORKING >
 ```JavaScript
 {
   name: 'command name' e.g. 'quit'
-  usage: 'command usage'(optional)
+  usage: 'command usage'  (optional)
   description: 'string describing what the command does'  (optional)
   cooldown: number  // cooldown between calls for this cmd
-  args: true if the command needs args,:false otherwise   (optional)
-  guildOnly: true if the command is not supposed to run if invocated from a DM (optional)
-  execute(args, message, queue) { // queue is a Map with queue Objects
+  args: true if the command needs args, false otherwise   (optional)
+  guildOnly: true if the command is not supposed to run if invocated from a dm (optional)
+  execute(args, message, queue) { // queue is a Map with Objects described below, message is a Message Object from Discord.js docs and args are the commands arguments if any
     // your command's code
   }
 }
 ```
 
-- The queue Map [declared at `discord-bot.js`] has an Object like this for each guild:
+- The queue Map [declared at `discord-bot.js`] has an Object like this for each guild: (so you can use `queue.get(guild.id)` to get the queue Object for that guild)
 
 ```JavaScript
 {
