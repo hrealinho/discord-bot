@@ -1,7 +1,7 @@
 {
-  "name": "Speaker",
-  "d_token": "NjEwMjU2MDM1NzMwNTU0OTE3.XVdsCQ.Q8fr9PLGhOoEcl_huumxTqv1XVw",
+  "name": "Bot name",
+  "d_token": "Bot discord token",
   "prefix": "!",
-  "oauth": "2G0wSqiOdbuYtvkGq0WeeFw_HgGq2Zyq",
-  "yt_token": "AIzaSyCTbXyhWnEXcEMFuB0x9bKVAF9tbD1lJRU"
+  "oauth": "Bot oauth",
+  "yt_token": "Youtube api token"
 }
