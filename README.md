@@ -63,15 +63,16 @@ WORKING >
  - Run the bot. (see running above)
 
  ## Commands
-
- - To add a command just create a file `command.js` and export an object containing:
-```JSON
+ - Command files are stored at /src/modules/commands
+ - To add a command just create a file `command.js` in the commands folder and export an object containing:
+```JavaScript
 {
   name: 'command name' e.g. 'quit'
   usage: 'command usage'(optional)
   description: 'string describing what the command does'  (optional)
   cooldown: number  // cooldown between calls for this cmd
-  arguments: true if the command needs args,:false otherwise   (optional)
+  args: true if the command needs args,:false otherwise   (optional)
+  guildOnly: true if the command is not supposed to run if invocated from a DM (optional)
   execute(args, message, queue) { // queue is a Map with queue Objects
     // your command's code
   }
@@ -80,7 +81,7 @@ WORKING >
 
 - The queue Map [declared at `discord-bot.js`] has an Object like this for each guild:
 
-```json
+```JavaScript
 {
   textChannel: null,    // Channel object to send messages to in this guild
   voiceChannel: null,   // VoiceChannel object to join and play in in this guild
@@ -93,4 +94,4 @@ WORKING >
 ```
 
 
-Check discord.js docs (https://discord.js.org/#/docs/) to urdenstand, add to the code or change it.
+Check discord.js docs (https://discord.js.org/#/docs/) to understand and add to the code or change it.
