@@ -3,24 +3,21 @@ const { prefix } = require('../../config.json');
 module.exports = {
   name: 'stop',
   usage: '`' + prefix + 'stop`',
-  description: 'stop playing',
+  description: 'stop playing a song',
+  guildOnly: true,
   args: false,
-  execute(arguments, message, queue) {
+  cooldown: 2,
+  execute(arguments, message, queue) {    // TODO
     const guild = message.guild;
     if (queue.get(guild.id).playing == false) {
       console.log("Not playing @ " + guild.name);
-      message.channel.send("Not playing.");
-      return;
+      return message.channel.send("Not playing.");
     }
     else {
-      const dispatcher = queue.get(guild.id).connection.dispatcher;
-      dispatcher.end();
       queue.get(guild.id).playing = false;
       queue.get(guild.id).play = null;
-
-  		return new Promise(function () {
-
-  		});
+      const dispatcher = queue.get(guild.id).connection.dispatcher;
+      return dispatcher.end();
     }
   }
 };

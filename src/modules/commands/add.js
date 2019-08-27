@@ -5,12 +5,13 @@ const getSong = require('../yt.js');
 module.exports = {
   name: 'add',
   usage: '`' + prefix + 'add <song name>`',
-  description: 'add song to queue',
+  description: 'add song to playlist',
+  guildOnly: true,
   cooldown: 3,
   args: true,
   execute(arguments, message, queue) {
     if (arguments.length == 0) {
-      message.channel.send("Add what?\nUse `" + prefix + "add 'song'`");
+      return message.channel.send("Add what?\nUse `" + prefix + "add 'song'`");
     } else {
       var songName = Utils.join(arguments);
       if (!songName) songName = arguments.toString();
@@ -19,9 +20,7 @@ module.exports = {
   			queue.get(message.guild.id).songs.push(song);
         message.reply("Added " + song.name + " to the playlist.");
   		});
-
+      return;
     }
-
-
   }
 }

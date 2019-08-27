@@ -3,7 +3,7 @@
  * @author Henrique Realinho
  */
 
-const Utils = require('../Utils/Utils.js');
+const Utils = require('./Utils/Utils.js');
 const ytdl = require('ytdl-core');
 const YouTube = require('youtube-node');
 
@@ -12,27 +12,31 @@ const youTube = new YouTube();
 const VOLUME = 0.4;
 
 /**
- * Play a song
- * @param {VoiceChannel} channel - Voice Channel for the song to be played in
+ * Plays a song using ytdl to download the audio of the given url
+ * @param {VoiceChannel} channel - VoiceChannel object for the song to be played in
  * @param {string} url - youtube url of the song to be played
- * @param {function} onEnd - callback to execute at the end of the
+ * @param {function} onJoin - callback to execute once the channel is joined
+ * @param {function} onEnd - callback to execute at the end of the song
  */
-function play (channel, url, onEnd) {
+function play (channel, url, onJoin, onEnd) {
 // TODO
-  if (!channel) {
+  if (!channel || !url) {
     return;
   }
 
-  join (channel, function (connection) {
+  return join(channel, function (connection) {
+    onJoin(connection);
     // joined voice channel (or client was already in the voice channel)
-    const dispatcher = connection.playStream(ytdl(url.toString()))
-    .on('end', () => { // TODO
+
+    // dispatcher to play the url using ytdl stream
+    const stream = ytdl(url, { filter: 'audioonly' });
+    const dispatcher = connection.playStream(stream);
+    dispatcher.on('end', () => { // TODO
         onEnd();
     })
-    .on('error', error => {  // play stream error
+    dispatcher.on('error', error => {  // play stream error
         console.error(error);
     });
-
     dispatcher.setVolume(VOLUME);
   });
 }
@@ -51,7 +55,7 @@ async function join(channel, callback) {
         .then( connection => {
         // worked
         console.log("Successfully connected.");
-        callback(connection);
+        return callback(connection);
     }).catch(e => {
         // errored, log it to console
         console.error(e);
@@ -59,5 +63,6 @@ async function join(channel, callback) {
 }
 
 module.exports = {
-  play: play
+  play: play,
+  join: join
 };

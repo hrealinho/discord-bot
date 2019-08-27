@@ -1,26 +1,26 @@
 # Discord Bot
-**NOT READY FOR PRODUCTION** 
+**NOT READY FOR PRODUCTION**
  Simple song playing discord bot to test some APIs using discord.js to interact with the Discord API.
  Yes, the code _does_ suck.
  Currently using youtube to play the songs.
 
  ## FEATURES:
- - custom prefix
- - youtube playing with song queue
 
 TODO >
- - stop ???,
- - skip ???
+ - leave
  - add Next feature
  - refactoring ...
- - Custom Commands
+ - tests
+ - custom prefix for each guild
 
 WORKING >
  - play song
+ - skip a song
+ - stop ???,
+ - change the volume
  - handle playing multiple servers at once
  - queue
- - leave
- - custom prefix ..
+ - ban command if role are admin
 
 ## Dependencies
 ```JSON
@@ -39,39 +39,58 @@ WORKING >
 
 ## DOCS
 
-## Installation
+## Installation:
  - install npm (https://www.npmjs.com/get-npm);
  - navigate to project root directory;
- - `$ npm install ffmpeg`;
- - `$ npm install opusscript`;
- - `$ npm install`;
+ - `$ npm install ffmpeg`
+ - `$ npm install opusscript`
+ - `$ npm install`
 
-## Running
+## Running:
  - `$ npm start`
 
-## Running for production
-- `$ npm run production`  uses pm2 (http://pm2.keymetrics.io/) 
+## Running for production:
+- `$ npm run production`  uses pm2 (http://pm2.keymetrics.io/)
 
-## Running for development
-  - `$ npm run dev`  uses nodemon (https://nodemon.io/) 
+## Running for development:
+  - `$ npm run dev`  uses nodemon (https://nodemon.io/)
 
-## Usage
-(create your application and bot at https://discordapp.com/developers/applications/ first)
+## Usage:
+ - To create a discord application and a bot (and get the necessary tokens) check https://discordapp.com/developers/docs/intro
+ - Invite the bot to your server through this link: https://discordapp.com/oauth2/authorize?&client_id=CLIENT_ID&scope=bot&permissions=8
  - Set the tokens and desired prefix for the bot's commands
  as well as the bot name in the `config.json` file. Default prefix is `!`.
- To get the necessary tokens check https://discordapp.com/developers/docs/intro
- - Invite the bot to your server through this link (changing to your client id): 
-https://discordapp.com/oauth2/authorize?&client_id=CLIENT_ID&scope=bot&permissions=8
- - Run the bot.
- - The bot has now joined your server and is ready to be used.
+ - Run the bot. (see running above)
 
- ## Bot commands
- - `help`
- - `play`
- - `stop`
- - `add <song>`
- - `skip`
- - ...
+ ## Commands
+
+ - To add a command just create a file `command.js` and export an object containing:
+```JSON
+{
+  name: 'command name' e.g. 'quit'
+  usage: 'command usage'(optional)
+  description: 'string describing what the command does'  (optional)
+  cooldown: number  // cooldown between calls for this cmd
+  arguments: true if the command needs args,:false otherwise   (optional)
+  execute(args, message, queue) { // queue is a Map with queue Objects
+    // your command's code
+  }
+}
+```
+
+- The queue Map [declared at `discord-bot.js`] has an Object like this for each guild:
+
+```json
+{
+  textChannel: null,    // Channel object to send messages to in this guild
+  voiceChannel: null,   // VoiceChannel object to join and play in in this guild
+  connection: null,     // the Connection object for that guild
+  songs: [],            // song queue
+  play: null,           // song currently playing (Object with name and youtube url (both strings)
+  volume: 0,            // volume (number from 1-10)
+  playing: false        // true if playing at the moment, false otherwise
+}
+```
 
 
-Check discord.js docs (https://discord.js.org/#/docs/) to add to the code or change it.
+Check discord.js docs (https://discord.js.org/#/docs/) to urdenstand, add to the code or change it.

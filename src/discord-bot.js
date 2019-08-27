@@ -28,6 +28,8 @@ const client = new Discord.Client();
 client.commands = new Discord.Collection();
 const cooldowns = new Discord.Collection();
 
+process.on('unhandledRejection', error => console.error('Uncaught Promise Rejection', error));
+
 
 /** GLOBAL VARIABLES **/
 const receivedMessages = []; // saves received messages
@@ -49,28 +51,46 @@ client.on('ready', () => {
     onLoad();
 });
 
+/******************************* ON MESSAGE **********************************/
+client.on('message', (message) => {
+  // Prevent bot from responding to its own messages
+  if (message.author == client.user) {
+      return;
+  }
+   // check if the bot was tagged in the message
+  if (message.content.includes(client.user.toString())) {
+      reply(message);
+  }
+
+  // check for the prefix and process the command
+  if (message.content.startsWith(prefix)) {
+      runCmd(message);
+  }
+});
+
+///////////////////////////////////////////////////////////////////////////////
 function setInfo() {
   if (client.user.username != name) {
     // changes username according to config.json file
-  client.user.setUsername(name)
-    .then(user => console.log(`My new username is ${user.username}`))
-    .catch(console.error);
+    client.user.setUsername(name)
+      .then(user => console.log(`My new username is ${user.username}`))
+      .catch(console.error);
   }
   // set bot status and activity
   //client.user.setAvatar(AVATAR_URL);     // change bot's avatar if you want
   client.user.setStatus('available');
   client.user.setPresence({
       game: {
-          name: 'with toilet paper | ' + prefix + 'help'
+          name: 'use' + prefix + 'help'
       }
   });
-
 }
 
 /**
  * Set bot status and fill servers and channels data structures.
  */
 function onLoad() {
+  // load commands to discord collection
   loadCommands( (command) => {
     client.commands.set(command.name, command);
   });
@@ -91,46 +111,8 @@ function onLoad() {
   });
 }
 
-/**
- * Reply to a received message.
- * @param {Message} message - the received message
- */
-function reply(message) {
-  // store received msgs
-  receivedMessages.push(message);
 
-  // send acknowledgement message
-  message.react("👍");
-
-  // Get every custom emoji from the server (if any) and react with each one
-  message.guild.emojis.forEach(customEmoji => {
-      message.react(customEmoji)
-      .catch( (err) => {
-         if(err) console.log(err);
-      });
-  });
-}
-
-/******************************* ON MESSAGE **********************************/
-
-// ON MESSAGE
-client.on('message', (message) => {
-  // Prevent bot from responding to its own messages
-  if (message.author == client.user) {
-      return;
-  }
-   // check if the bot was tagged in the message
-  if (message.content.includes(client.user.toString())) {
-      reply(message);
-  }
-
-  // check for the prefix and process the command
-  if (message.content.startsWith(prefix)) {
-      runCmd(message);
-  }
-});
-
-/** PROCESSING COMMANDS **/
+/************************** PROCESSING COMMANDS *******************************/
 
 /**
  *
@@ -140,7 +122,7 @@ client.on('message', (message) => {
 function runCmd(message) {
   const fullCommand = message.content.substr(prefix.length); // remove prefix
 	const args = fullCommand.split(" ").slice(1);
-	const commandName = fullCommand.split(/ +/).shift().toLowerCase();
+	const commandName = fullCommand.split(/ +/).shift().toLowerCase(); // split w regex
 
   if (!client.commands.has(commandName))  {
     return message.channel.send(`Not a command, ${message.author}.\n` +
@@ -162,8 +144,7 @@ function runCmd(message) {
 
   if (timestamps.has(message.author.id)) {
     const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-
-  	if (now < expirationTime) {
+  	if (now < expirationTime) {  // cooldown
   		const timeLeft = (expirationTime - now) / 1000;
   		return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`);
   	}
@@ -172,19 +153,34 @@ function runCmd(message) {
     timestamps.set(message.author.id, now);
     setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
   }
-  /****/
+  /**       **/
   try {
-    if (command.args && !args.length) {
+    if (command.guildOnly && message.channel.type !== 'text') { // check for guild only cmds
+    	return message.reply('I can\'t execute that command inside DMs!');
+    }
+    if (command.args && !args.length) {   // check if needed args are missing
       message.reply(`You didn't provide any arguments, ${message.author}!`);
       return message.reply('usage: ' + command.usage);
     }
-    /* EXECUTE CMD */
+    /****************************** EXECUTE CMD *******************************/
     return command.execute(args, message, queue);
 
   } catch (error) {
   	console.error(error);
   	return message.reply('there was an error trying to execute that command!');
   }
+}
+
+
+/**
+ * Reply to a received message.
+ * @param {Message} message - the received message
+ */
+function reply(message) {
+  // store received msgs
+  receivedMessages.push(message);
+  // send acknowledgement message
+  message.react("👍");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -216,6 +212,7 @@ client.on("guildDelete", guild => {
 
 client.once('reconnecting', () => {
  console.log('Reconnecting!');
+ queue = new Map();
  client.guilds.forEach( (guild) => {
    // add to data structure
    const queueObj = {
@@ -236,9 +233,4 @@ client.once('disconnect', () => {
  queue = new Map();
 });
 
-
 module.exports = client;
-
-//////////////////////////////////////////////////////////
-
-/**************************** CREATING COMMANDS *******************************/

@@ -20,11 +20,12 @@ module.exports = {
   name: 'skip',
   usage: '`' + prefix + 'skip`',
   description: 'skips a playing song or the next in queue if no song is playing',
+  guildOnly: true,
   args: false,
   execute(arguments, message, queue) {
       var queueObj = queue.get(message.guild.id);
       if (!queueObj.playing && Utils.isEmpty(queueObj.songs)) {
-          message.channel.send("Playlist is empty.");
+          return message.channel.send("Playlist is empty.");
       }
       else {
         const guild = message.guild;
@@ -43,10 +44,7 @@ module.exports = {
   	    console.log("Skipping song. @ " + message.channel.guild.name);
   	    message.channel.send("Skipped.");
 
-  			return new Promise(function () {
-
-  			});
+  			return ;
       }
-
 		}
 };

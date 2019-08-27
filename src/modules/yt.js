@@ -40,8 +40,7 @@ function getSong(queue, songName, channel, callback) {
 					url: videoUrl
 			};
 			callback(song);
-			return new Promise(function () {
-			});
+			return ;
 		}
 	});
 }

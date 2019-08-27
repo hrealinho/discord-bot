@@ -4,12 +4,15 @@ module.exports = {
   name: 'leave',
   usage: '`' + prefix + 'leave`',
   description: 'reset playlist and leave the voice channel if joined',
+  guildOnly: true,
   args: false,
   execute(arguments, message, queue) {
     var queueObj = queue.get(message.guild.id);
-    if (queueObj.VoiceChannel) {
+    if (queueObj.playing) {
+      queueObj.playing = false;
+      queueObj.connection.dispatcher.end();
       // Leave the voice channel
-      queueObj.channel.leave();
+      queueObj.voiceChannel.leave();
     }
 
     queueObj = {
@@ -22,6 +25,6 @@ module.exports = {
       playing: false
     };
     queue.set(message.channel.guild.id, queueObj);
-
+    return;
   }
 }

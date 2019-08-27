@@ -1,7 +1,7 @@
 {
-  "d_token": "DISCORD_TOKEN",
+  "name": "Speaker",
+  "d_token": "NjEwMjU2MDM1NzMwNTU0OTE3.XVdsCQ.Q8fr9PLGhOoEcl_huumxTqv1XVw",
   "prefix": "!",
-  "name": "BOT_NAME",
-  "oauth": "BOT_OAUTH",
-  "yt_token": "YOUTUBE_TOKEN"
+  "oauth": "2G0wSqiOdbuYtvkGq0WeeFw_HgGq2Zyq",
+  "yt_token": "AIzaSyCTbXyhWnEXcEMFuB0x9bKVAF9tbD1lJRU"
 }
