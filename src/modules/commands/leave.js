@@ -11,6 +11,8 @@ module.exports = {
     if (queueObj.playing) {
       queueObj.playing = false;
       queueObj.connection.dispatcher.end();
+    }
+    if (queueObj.voiceChannel) {
       // Leave the voice channel
       queueObj.voiceChannel.leave();
     }
@@ -22,9 +24,10 @@ module.exports = {
       songs: [],
       play: null,
       volume: 4,
-      playing: false
+      playing: false,
+      prefix: prefix
     };
     queue.set(message.channel.guild.id, queueObj);
-    return;
+    return message.reply('Bye.');
   }
 }

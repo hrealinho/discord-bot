@@ -23,7 +23,7 @@ const {
 const Discord = require('discord.js');
 // OTHER PACKAGES
 const Utils = require('./modules/Utils/Utils.js');
-const loadCommands = require('./modules/commands.js');
+const db = require('./modules/dev/database.js');
 
 // Init
 const client = new Discord.Client();
@@ -63,35 +63,18 @@ client.on('message', (message) => {
   }
 
   // check for the prefix and process the command
-  if (message.content.startsWith(prefix)) {
+  if (message.content.startsWith(prefix) || message.content.startsWith(queue.get(message.guild.id).prefix)) {
       runCmd(message);
   }
 });
 
 ///////////////////////////////////////////////////////////////////////////////
-function setInfo() {
-  if (client.user.username != name) {
-    // changes username according to config.json file
-    client.user.setUsername(name)
-      .then(user => console.log(`My new username is ${user.username}`))
-      .catch(console.error);
-  }
-  // set bot status and activity
-  //client.user.setAvatar(AVATAR_URL);     // change bot's avatar if you want
-  client.user.setStatus('available');
-  client.user.setPresence({
-      game: {
-          name: 'use' + prefix + 'help'
-      }
-  });
-}
-
 /**
  * Set bot status and fill servers and channels data structures.
  */
 function onLoad() {
   // load commands to discord collection
-  loadCommands( (command) => {
+  Utils.loadCommands( (command) => {
     client.commands.set(command.name, command);
   });
 
@@ -105,19 +88,37 @@ function onLoad() {
       songs: [],
       play: null,
       volume: 0,
-      playing: false
+      playing: false,
+      prefix: prefix
     };
     queue.set(guild.id, queueObj);
   });
 }
 
-
+/**
+ *
+ */
+function setInfo() {
+  if (client.user.username != name) {
+    // changes username according to config.json file
+    client.user.setUsername(name)
+      .then(user => console.log(`My new username is ${user.username}`))
+      .catch(console.error);
+  }
+  // set bot status and activity
+  //client.user.setAvatar(AVATAR_URL);     // change bot's avatar if you want
+  client.user.setStatus('available');
+  client.user.setPresence({
+      game: {
+          name: 'sounds | use ' + prefix + 'help'
+      }
+  });
+}
 /************************** PROCESSING COMMANDS *******************************/
 
 /**
  *
  * @param {Message} message -
- * @param {[string]} arguments -
  */
 function runCmd(message) {
   const fullCommand = message.content.substr(prefix.length); // remove prefix
@@ -129,31 +130,34 @@ function runCmd(message) {
       'Try `'+ prefix + 'help`');
   }
 
+  // get command object
   const command = client.commands.get(commandName)
 		|| client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
 	if (!command) return;
-  /** CHECK FOR COOLDOWN **/
+
+  /** check if the command has a cooldown and apply it **/
   if (!cooldowns.has(command.name)) {
   	cooldowns.set(command.name, new Discord.Collection());
   }
-
   const now = Date.now();
   const timestamps = cooldowns.get(command.name);
-  const cooldownAmount = (command.cooldown || 3) * 1000;
+  if (command.cooldown > 0) {
+    const cooldownAmount = (command.cooldown || 3) * 1000;
 
-  if (timestamps.has(message.author.id)) {
-    const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-  	if (now < expirationTime) {  // cooldown
-  		const timeLeft = (expirationTime - now) / 1000;
-  		return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`);
-  	}
+    if (timestamps.has(message.author.id)) {
+      const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+    	if (now < expirationTime) {  // cooldown
+    		const timeLeft = (expirationTime - now) / 1000;
+    		return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`);
+    	}
+    }
+    else {
+      timestamps.set(message.author.id, now);
+      setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+    }
   }
-  else {
-    timestamps.set(message.author.id, now);
-    setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-  }
-  /**       **/
+  /****************************************************/
   try {
     if (command.guildOnly && message.channel.type !== 'text') { // check for guild only cmds
     	return message.reply('I can\'t execute that command inside DMs!');
@@ -196,17 +200,18 @@ client.on("guildCreate", guild => {
       songs: [],
       play: null,
       volume: VOLUME,
-      playing: false
+      playing: false,
+      prefix: prefix
     };
     queue.set(guild.id, queueObj);
-})
+});
 
 // removed from a guild
 client.on("guildDelete", guild => {
     console.log("Left a guild: " + guild.name);
     //remove guild from map
     queue.delete(guild.id);
-})
+});
 
 /*****************************************************************************/
 
@@ -221,7 +226,8 @@ client.once('reconnecting', () => {
          songs: [],
          play: null,
          volume: VOLUME,
-         playing: false
+         playing: false,
+         prefix: prefix
        };
        queue.set(guild.id, queueObj);
    });

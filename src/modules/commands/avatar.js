@@ -9,6 +9,8 @@ module.exports = {
   args: true,
   cooldown: 90,     // setting avatar call in discord api is heavily limited
   execute(arguments, message, queue) {
+    if (!message) return message.reply('Error setting the avatar.');
+
     message.member.user.setAvatar(Utils.join(arguments))
       .catch( (err) => {
         if (err) return console.log(err);

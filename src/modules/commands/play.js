@@ -19,6 +19,7 @@ module.exports = {
   usage: '`' + prefix + 'play`',
   description: 'play the first song in queue',
   guildOnly: true,
+  args: false,
   cooldown: 5,
   execute(arguments, message, queue) {
 			const guild = message.guild;
@@ -40,7 +41,8 @@ module.exports = {
         // song queue for this server
         const serverQueue = playlist.songs;
         if(!playlist.playing && arguments.length > 0) {
-          getSong(queue, arguments, message.channel, (songObj) => {
+          getSong(queue, arguments,
+         (songObj) => {
             song = songObj;
           });
         }
@@ -68,7 +70,8 @@ module.exports = {
               songs: serverQueue,
               play: song,
               volume: 5,
-              playing: true
+              playing: true,
+              prefix: prefix
             };
             queue.set(channel.guild.id, queueObj);
 

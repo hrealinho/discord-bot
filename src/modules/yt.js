@@ -9,13 +9,13 @@ const {
 const youTube = new YouTube();
 
 /**
- * Searches youtube
+ * Searches youtube for the song name and returns the first result if any are
+ * found.
  * @param {Map} queue -
- * @param {string} songName -
- * @param {Channel} channel -
- * @param {function} callback -
+ * @param {string} songName - song name to search for
+ * @param {function} callback - callback function to be executed upon the search
  */
-function getSong(queue, songName, channel, callback) {
+function getSong(queue, songName, callback) {
 	// YOUTUBE TOKEN
 	youTube.setKey(yt_token);
 
@@ -39,14 +39,9 @@ function getSong(queue, songName, channel, callback) {
 					name: name,
 					url: videoUrl
 			};
-			callback(song);
-			return ;
+			return callback(song);
 		}
 	});
 }
-
-
-
-
 
 module.exports = getSong;

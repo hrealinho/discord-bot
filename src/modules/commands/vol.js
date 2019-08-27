@@ -20,10 +20,12 @@ module.exports = {
     if (args.includes('up') || args.includes('u')) {
       //up
       queueObj.volume++;
+      message.reply('volume++');
     }
     else if (queueObj.volume > 0 && (args.includes('down')|| args.includes('d'))) {
       //down
       queueObj.volume--;
+      message.reply('volume--');
     }
 
     if (!queueObj.playing) {

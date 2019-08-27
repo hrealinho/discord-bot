@@ -1,4 +1,4 @@
-const loadCommands = require('../commands.js');
+const loadCommands = require('../Utils/Utils.js').loadCommands;
 const { prefix } = require('../../config.json');
 
 module.exports = {
