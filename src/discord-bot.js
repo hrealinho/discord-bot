@@ -2,13 +2,15 @@
  * My simple discord bot using discord.js.
  * documentation available at https://github.com/hrealinho/discord-bot
  * Discord.js docs at https://discord.js.org/#/docs/
- * Before running invite the bot to your desired server through:
- *  https://discordapp.com/oauth2/authorize?&client_id=610256035730554917&scope=bot&permissions=8
+ *
+ * To create your discord application and bot check
+ *  https://discordapp.com/developers/docs/intro
+ * Before running invite the bot you created with the respective CLIENT_ID
+ * your server through:
+ *   https://discordapp.com/oauth2/authorize?&client_id=CLIENT_ID&scope=bot&permissions=8
  *
  * @author Henrique Realinho
  */
-
-// TEST SERVER ID 610255655625818122
 
 /** CONFIG **/
 const {
@@ -27,8 +29,6 @@ const loadCommands = require('./modules/commands.js');
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 const cooldowns = new Discord.Collection();
-
-process.on('unhandledRejection', error => console.error('Uncaught Promise Rejection', error));
 
 
 /** GLOBAL VARIABLES **/
@@ -211,26 +211,27 @@ client.on("guildDelete", guild => {
 /*****************************************************************************/
 
 client.once('reconnecting', () => {
- console.log('Reconnecting!');
- queue = new Map();
- client.guilds.forEach( (guild) => {
-   // add to data structure
-   const queueObj = {
-     textChannel: null,
-     voiceChannel: null,
-     connection: null,
-     songs: [],
-     play: null,
-     volume: VOLUME,
-     playing: false
-   };
-   queue.set(guild.id, queueObj);
- });
+   console.log('Reconnecting!');
+   client.guilds.forEach( (guild) => {
+       // add to data structure
+       const queueObj = {
+         textChannel: null,
+         voiceChannel: null,
+         connection: null,
+         songs: [],
+         play: null,
+         volume: VOLUME,
+         playing: false
+       };
+       queue.set(guild.id, queueObj);
+   });
 });
 
 client.once('disconnect', () => {
- console.log('Disconnect!');
- queue = new Map();
+  console.log('Disconnect!');
+  client.guilds.forEach( (guild) => {
+      queue.delete(guild.id);
+  });
 });
 
 module.exports = client;

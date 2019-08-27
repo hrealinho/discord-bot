@@ -16,16 +16,16 @@ const VOLUME = 4;
 module.exports = {
   name: 'play',
   aliases: ['p'],
-  usage: '`' + prefix + 'play` or `' + prefix + 'play <song name>`',
-  description: 'play the first song in queue if no arguments given, or play the given song if no song is in queue (if a song is already in queue, adds it to the playlist)',
+  usage: '`' + prefix + 'play`',
+  description: 'play the first song in queue',
   guildOnly: true,
   cooldown: 5,
   execute(arguments, message, queue) {
 			const guild = message.guild;
 			if (!guild) return;
 			const playlist = queue.get(guild.id);
-      if (arguments.length == 0 && (Utils.isEmpty(playlist.songs) || playlist.playing)) {
-        message.reply("Play what?\nAdd a song to a playlist using `" + prefix + "add 'song'` and then use `" + prefix + "play`");
+      if (arguments.length > 0 || (Utils.isEmpty(playlist.songs) || playlist.playing)) {
+        message.reply("Play what?\nAdd a song to a playlist using `" + prefix + "add 'song'` and then use `" + prefix + "play` to play");
       }
 			else if (!message.member.voiceChannel) {
         message.reply("You are not in a voice channel.");
