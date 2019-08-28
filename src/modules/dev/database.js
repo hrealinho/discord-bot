@@ -7,7 +7,7 @@
 const mongoose = require('mongoose');
 // connect to mongo db atlas
 const db = mongoose.connect('mongodb+srv://app:QB8t39GXqq8lOos8@eu-west-cluster0-vkyik.mongodb.net/test?retryWrites=true&w=majority',
-{ useCreateIndex: true }, { useNewUrlParser: true });
+{ useCreateIndex: true, useNewUrlParser: true });
 
 var Schema = mongoose.Schema;
 // what to save for each guild
@@ -78,7 +78,7 @@ function deleteDoc(guildId) {
 }
 
 /**
- *  
+ *
  * @param {number} guildId -
  * @returns the prefix for the given guild
  */

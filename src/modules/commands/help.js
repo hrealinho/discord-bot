@@ -1,5 +1,10 @@
+const Discord = require('discord.js');
+
 const loadCommands = require('../Utils/Utils.js').loadCommands;
-const { prefix } = require('../../config.json');
+const {
+   prefix,
+   name
+ } = require('../../config.json');
 
 module.exports = {
   name: 'help',
@@ -16,8 +21,14 @@ module.exports = {
     loadCommands((command) => {
       str += '-' + command.usage + ' -> ' + command.description + ' \n\n';
     });
-
-    message.author.send(str);
+    // inside a command, event listener, etc.
+    const cmdEmbed = new Discord.RichEmbed()
+      .setColor('#0099ff')
+      .addField('Commands', str)
+      .addBlankField()
+      .setTimestamp()
+      .setFooter(name, 'bot');
+    message.author.send(cmdEmbed);
     message.reply('sent you a DM with the available commands.');
     return ;
   }

@@ -209,7 +209,7 @@ function reply(message) {
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Update database, runs upon process exit - check Utils/cleanup.js
+ * Update database, runs upon process exit - check modules/Utils/cleanup.js
  */
 function onExit() { // TODO
   const guilds = client.guilds;
@@ -239,7 +239,7 @@ client.on("guildCreate", guild => {
     };
     // save the guild's queue object in the Map
     queue.set(guild.id, queueObj);
-    // create a new document for the guild in the database
+    // save guild's document in the database
     db.save(guild.name, guild.id, [], prefix);
 });
 
@@ -248,7 +248,7 @@ client.on("guildDelete", guild => {
     console.log("Left a guild: " + guild.name);
     // remove guild from map
     queue.delete(guild.id);
-    // remove guild from database
+    // remove guild's doc from database
     db.delete(guild.id);
 });
 
@@ -281,7 +281,7 @@ client.once('disconnect', () => {
       const guildPrefix = queue.get(guild.id).prefix;
       // delete from Map
       queue.delete(guild.id);
-      // save prefix to the database
+      // update guild's doc to the database
       db.save(guild.name, guild.id, [], guildPrefix);
   });
 });
