@@ -1,26 +1,28 @@
 # Discord Bot
 **NOT READY FOR PRODUCTION**
  Simple song playing discord bot to test some APIs using discord.js to interact with the Discord API.
- Yes, the code _does_ suck.
- Currently using youtube to play the songs.
+ Currently using youtube to play the songs and mongo db as the database.
 
  ## FEATURES:
 
 TODO >
- - leave
  - add Next feature
  - refactoring ...
  - tests
- - custom prefix for each guild
+ - prefix loading :/
+ - spotify API to accept spotify playlist links and more
 
 WORKING >
- - play song
+ - play song from youtube url
  - skip a song
- - stop ???,
+ - stop
+ - leave
  - change the volume
  - handle playing multiple servers at once
  - queue
  - ban command if role are admin
+ - custom prefix for each guild
+ - saves prefix to database
 
 ## Dependencies
 ```JSON
@@ -40,10 +42,10 @@ WORKING >
 ## DOCS
 
 ## Installation:
- - install npm (https://www.npmjs.com/get-npm);
+ - get npm (https://www.npmjs.com/get-npm);
  - navigate to project root directory;
- - `$ npm install ffmpeg`
- - `$ npm install opusscript`
+ - `$ npm install -g ffmpeg`
+ - `$ npm install -g opusscript`
  - `$ npm install`
 
 ## Running:
@@ -68,11 +70,11 @@ WORKING >
 ```JavaScript
 {
   name: 'command name' e.g. 'quit'
-  usage: 'command usage'  (optional)
-  description: 'string describing what the command does'  (optional)
-  cooldown: number  // cooldown between calls for this cmd
-  args: true if the command needs args, false otherwise   (optional)
-  guildOnly: true if the command is not supposed to run if invocated from a dm (optional)
+  usage: 'command usage' // string describing how the command should be used (optional)
+  description: 'string describing what the command does' // command description (optional)
+  cooldown: number  // cooldown between calls for this cmd (0 if no cooldown needed)
+  args: true if the command needs args, false otherwise  // (optional)
+  guildOnly: true if the command is not supposed to run if invocated from a dm // (optional)
   execute(args, message, queue) { // queue is a Map with Objects described below, message is a Message Object from Discord.js docs and args are the commands arguments if any
     // your command's code
   }
@@ -92,6 +94,8 @@ WORKING >
   playing: false        // true if playing at the moment, false otherwise
 }
 ```
+
+
 
 
 Check discord.js docs (https://discord.js.org/#/docs/) to understand and add to the code or change it.

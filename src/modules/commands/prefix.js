@@ -12,9 +12,8 @@ module.exports = {
     if (!queue || !message) return console.log('error at prefix cmd.');
     if (arguments.length > 1) return message.reply('Prefix should be a character');
 
-    const queueObj = queue.get(message.guild.id);
     const nPrefix = arguments.toString();
-    queueObj.prefix = nPrefix;
+    queue.get(message.guild.id).prefix = nPrefix;
     return message.reply('Changed guild prefix to `' + nPrefix +'`');
   }
 };

@@ -33,16 +33,17 @@ module.exports = {
       }
 			else {
         var song = {};
-				if (playlist.playing && arguments.length > 0) {
+				if (playlist.playing && arguments.length > 0) { // not running
 	        // if already playing, add song in arguments to queue
 	        return require('./add.js').execute(arguments, message, queue);
 				}
 
         // song queue for this server
         const serverQueue = playlist.songs;
-        if(!playlist.playing && arguments.length > 0) {
-          getSong(queue, arguments,
-         (songObj) => {
+        if(!playlist.playing && arguments.length > 0) {  // not running
+          // gets a song using yt module.
+          getSong(message.channel, arguments, queue,
+         (songObj) => { // songObj is an Object with name and url (both strings)
             song = songObj;
           });
         }
@@ -63,6 +64,7 @@ module.exports = {
             // worked
             console.log("Successfully connected. @ " + connection.channel.guild.name);
             // joined voice channel (or client was already in the voice channel)
+            /*
             const queueObj = {
               textChannel: channel,
               voiceChannel: voiceChannel,
@@ -74,7 +76,15 @@ module.exports = {
               prefix: prefix
             };
             queue.set(channel.guild.id, queueObj);
-
+            */
+            // set everything but prefix
+            queue.get(message.channel.guild.id).connection = connection;
+            queue.get(message.channel.guild.id).textChannel = channel;
+            queue.get(message.channel.guild.id).voiceChannel = voiceChannel;
+            queue.get(message.channel.guild.id).songs = serverQueue;
+            queue.get(message.channel.guild.id).play = song;
+            queue.get(message.channel.guild.id).playing = true;
+            queue.get(message.channel.guild.id).volume = VOLUME;
             console.log("Now playing: " + song.name + " in " + song.url);
             return channel.send("Now playing: " + song.name);
           },
@@ -91,7 +101,7 @@ module.exports = {
             }
             return module.exports.execute(arguments, message, queue);
           });
-        return;
+        return ;
       }
     }
 };

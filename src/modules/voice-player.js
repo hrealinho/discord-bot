@@ -33,11 +33,12 @@ function play (channel, url, onJoin, onEnd) {
     const dispatcher = connection.playStream(stream);
     dispatcher.on('end', () => { // TODO
         onEnd();
-    })
+    });
     dispatcher.on('error', error => {  // play stream error
         console.error(error);
     });
     dispatcher.setVolume(VOLUME);
+
   });
 }
 

@@ -16,7 +16,7 @@ module.exports = {
       // Leave the voice channel
       queueObj.voiceChannel.leave();
     }
-
+    /*
     queueObj = {
       textChannel: null,
       voiceChannel: null,
@@ -28,6 +28,12 @@ module.exports = {
       prefix: prefix
     };
     queue.set(message.channel.guild.id, queueObj);
+    */
+    queue.get(message.channel.guild.id).connection = null;
+    queue.get(message.channel.guild.id).textChannel = null;
+    queue.get(message.channel.guild.id).voiceChannel = null;
+    queue.get(message.channel.guild.id).songs = [];
+    queue.get(message.channel.guild.id).play = null;
     return message.reply('Bye.');
   }
 }

@@ -24,6 +24,8 @@ const Discord = require('discord.js');
 // OTHER PACKAGES
 const Utils = require('./modules/Utils/Utils.js');
 const db = require('./modules/dev/database.js');
+const cleanup = require('./modules/Utils/cleanup.js').Cleanup(onExit);
+
 
 // Init
 const client = new Discord.Client();
@@ -37,38 +39,22 @@ const queue = new Map();  // map for queue Objects with info for each guild
 
 /** CONSTANTS **/
 const AVATAR_URL = __dirname + '/images/discord-logo.jpg';
+const VOLUME = 4; // volume 1-10
 
-/*****************************************************************************/
-// DISCORD LOGIN
+/******************************* DISCORD LOGIN *******************************/
+//
 client.login(d_token).catch( (e) => {
   console.log('Error logging into discord');
   console.log(e);
+
 });
 
-// ON READY
+/******************************* ON READY *******************************/
 client.on('ready', () => {
     console.log("Connected as " + client.user.tag);
     onLoad();
 });
 
-/******************************* ON MESSAGE **********************************/
-client.on('message', (message) => {
-  // Prevent bot from responding to its own messages
-  if (message.author == client.user) {
-      return;
-  }
-   // check if the bot was tagged in the message
-  if (message.content.includes(client.user.toString())) {
-      reply(message);
-  }
-
-  // check for the prefix and process the command
-  if (message.content.startsWith(prefix) || message.content.startsWith(queue.get(message.guild.id).prefix)) {
-      runCmd(message);
-  }
-});
-
-///////////////////////////////////////////////////////////////////////////////
 /**
  * Set bot status and fill servers and channels data structures.
  */
@@ -79,19 +65,28 @@ function onLoad() {
   });
 
   setInfo();
+
   // save servers the bot is connected to
   client.guilds.forEach((guild) => {
-    const queueObj = {
-      textChannel: null,
-      voiceChannel: null,
-      connection: null,
-      songs: [],
-      play: null,
-      volume: 0,
-      playing: false,
-      prefix: prefix
-    };
-    queue.set(guild.id, queueObj);
+      // load guild prefix from database or add guild document to the database,
+      //if the guild is not on the database
+      var guildPrefix = db.loadPrefix(guild.id);
+      if (!guildPrefix) {
+        guildPrefix = prefix;
+        db.save(guild.name, guild.id, [], guildPrefix);
+      }
+      const queueObj = {
+        textChannel: null,
+        voiceChannel: null,
+        connection: null,
+        songs: [],
+        play: null,
+        volume: 0,
+        playing: false,
+        prefix: guildPrefix
+      };
+      // add queue Object for each guild to the queue Map
+      queue.set(guild.id, queueObj);
   });
 }
 
@@ -114,10 +109,31 @@ function setInfo() {
       }
   });
 }
-/************************** PROCESSING COMMANDS *******************************/
+
+/*****************************************************************************/
+
+/******************************* ON MESSAGE **********************************/
+client.on('message', (message) => {
+  // Prevent bot from responding to its own messages
+  if (message.author == client.user) {
+      return;
+  }
+   // check if the bot was tagged in the message
+  if (message.content.includes(client.user.toString())) {
+      reply(message);
+  }
+
+  // check for the prefix and process the command
+  if (message.content.startsWith(queue.get(message.guild.id).prefix)) {
+      runCmd(message);
+  }
+});
+
+
+/*****                       PROCESSING COMMANDS                          *****/
 
 /**
- *
+ * Interprets and runs a command from a message.
  * @param {Message} message -
  */
 function runCmd(message) {
@@ -157,7 +173,7 @@ function runCmd(message) {
       setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
     }
   }
-  /****************************************************/
+  ////////////////////////////////////////////////////////
   try {
     if (command.guildOnly && message.channel.type !== 'text') { // check for guild only cmds
     	return message.reply('I can\'t execute that command inside DMs!');
@@ -168,7 +184,7 @@ function runCmd(message) {
     }
     /****************************** EXECUTE CMD *******************************/
     return command.execute(args, message, queue);
-
+    /**************************************************************************/
   } catch (error) {
   	console.error(error);
   	return message.reply('there was an error trying to execute that command!');
@@ -187,7 +203,25 @@ function reply(message) {
   message.react("👍");
 }
 
+/*****************************************************************************/
+
+
 ///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Update database, runs upon process exit - check Utils/cleanup.js
+ */
+function onExit() { // TODO
+  const guilds = client.guilds;
+  if (guilds === []) return console.log('error exit');
+  console.log('saving..');
+  guilds.forEach( guild => {
+      const songs = queue.get(guild.id).songs;
+      const guildPrefix = queue.get(guild.id).prefix;
+
+      db.save(guild.name, guild.id, songs, guildPrefix);
+  });
+}
 
 // joined a guild
 client.on("guildCreate", guild => {
@@ -203,14 +237,19 @@ client.on("guildCreate", guild => {
       playing: false,
       prefix: prefix
     };
+    // save the guild's queue object in the Map
     queue.set(guild.id, queueObj);
+    // create a new document for the guild in the database
+    db.save(guild.name, guild.id, [], prefix);
 });
 
 // removed from a guild
 client.on("guildDelete", guild => {
     console.log("Left a guild: " + guild.name);
-    //remove guild from map
+    // remove guild from map
     queue.delete(guild.id);
+    // remove guild from database
+    db.delete(guild.id);
 });
 
 /*****************************************************************************/
@@ -218,7 +257,9 @@ client.on("guildDelete", guild => {
 client.once('reconnecting', () => {
    console.log('Reconnecting!');
    client.guilds.forEach( (guild) => {
-       // add to data structure
+       // load prefix from database
+       var guildPrefix = db.loadPrefix(guild.id);
+       if (!guildPrefix) guildPrefix = prefix;
        const queueObj = {
          textChannel: null,
          voiceChannel: null,
@@ -227,8 +268,9 @@ client.once('reconnecting', () => {
          play: null,
          volume: VOLUME,
          playing: false,
-         prefix: prefix
+         prefix: guildPrefix
        };
+       // add to data structure
        queue.set(guild.id, queueObj);
    });
 });
@@ -236,7 +278,11 @@ client.once('reconnecting', () => {
 client.once('disconnect', () => {
   console.log('Disconnect!');
   client.guilds.forEach( (guild) => {
+      const guildPrefix = queue.get(guild.id).prefix;
+      // delete from Map
       queue.delete(guild.id);
+      // save prefix to the database
+      db.save(guild.name, guild.id, [], guildPrefix);
   });
 });
 

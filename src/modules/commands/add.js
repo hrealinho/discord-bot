@@ -16,10 +16,11 @@ module.exports = {
       var songName = Utils.join(arguments);
       if (!songName) songName = arguments.toString();
 
-      return getSong(queue, songName, function (song) {
-  			queue.get(message.guild.id).songs.push(song);
-        message.reply("Added " + song.name + " to the playlist.");
-  		});
+      return getSong(message.channel, songName, queue,
+        function callback(song) {
+    			queue.get(message.guild.id).songs.push(song);
+          message.reply("Added " + song.name + " to the playlist.");
+    	});
     }
   }
 }
