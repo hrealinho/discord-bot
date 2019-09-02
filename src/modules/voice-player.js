@@ -2,10 +2,10 @@
  * Voice player module for discord
  * @author Henrique Realinho
  */
-
-const Utils = require('./Utils/Utils.js');
 const ytdl = require('ytdl-core');
 const YouTube = require('youtube-node');
+const Utils = require('./Utils/Utils.js');
+const voiceRecorder = require('./voice-recorder.js');
 
 const youTube = new YouTube();
 
@@ -54,6 +54,7 @@ async function join(channel, callback) {
 
     channel.join()
         .then( connection => {
+        //voiceRecorder.record(channel, connection);
         // worked
         console.log("Successfully connected.");
         return callback(connection);

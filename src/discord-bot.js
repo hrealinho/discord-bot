@@ -12,7 +12,7 @@
  * @author Henrique Realinho
  */
 
-/** CONFIG **/
+/** CONFIG FILE **/
 const {
   name,
 	prefix,
@@ -70,11 +70,21 @@ function onLoad() {
   client.guilds.forEach((guild) => {
       // load guild prefix from database or add guild document to the database,
       //if the guild is not on the database
-      var guildPrefix = db.loadPrefix(guild.id);
-      if (!guildPrefix) {
-        guildPrefix = prefix;
-        db.save(guild.name, guild.id, [], guildPrefix);
-      }
+      var guildPrefix = '';
+      db.loadPrefix(guild.id, (doc) => {
+        if (doc == null) { return; }
+        guildPrefix = doc.prefix;
+        if (!guildPrefix || guildPrefix === undefined) {
+          guildPrefix = prefix;
+          return db.save(guild.name, guild.id, [], guildPrefix, (doc) => {
+            console.log('saved to database: ' + doc);
+          });
+        }
+        else {
+          return console.log('loaded data from database');
+        }
+      });
+
       const queueObj = {
         textChannel: null,
         voiceChannel: null,
@@ -141,9 +151,12 @@ function runCmd(message) {
 	const args = fullCommand.split(" ").slice(1);
 	const commandName = fullCommand.split(/ +/).shift().toLowerCase(); // split w regex
 
-  if (!client.commands.has(commandName))  {
+  if (!client.commands.has(commandName) && commandName.includes(prefix))  {
     return message.channel.send(`Not a command, ${message.author}.\n` +
       'Try `'+ prefix + 'help`');
+  }
+  else if (!client.commands.has(commandName)) {
+    return ;
   }
 
   // get command object
@@ -180,7 +193,7 @@ function runCmd(message) {
     }
     if (command.args && !args.length) {   // check if needed args are missing
       message.reply(`You didn't provide any arguments, ${message.author}!`);
-      return message.reply('usage: ' + command.usage);
+      return message.channel.send('usage: ' + command.usage);
     }
     /****************************** EXECUTE CMD *******************************/
     return command.execute(args, message, queue);
@@ -219,7 +232,9 @@ function onExit() { // TODO
       const songs = queue.get(guild.id).songs;
       const guildPrefix = queue.get(guild.id).prefix;
 
-      db.save(guild.name, guild.id, songs, guildPrefix);
+      db.save(guild.name, guild.id, songs, guildPrefix, (doc) => {
+        console.log('saved to database: ' + doc);
+      });
   });
 }
 
@@ -240,7 +255,10 @@ client.on("guildCreate", guild => {
     // save the guild's queue object in the Map
     queue.set(guild.id, queueObj);
     // save guild's document in the database
-    db.save(guild.name, guild.id, [], prefix);
+    db.save(guild.name, guild.id, [], prefix, (doc) => {
+
+      console.log('saved to database: ' + doc);
+    });
 });
 
 // removed from a guild
@@ -257,8 +275,13 @@ client.on("guildDelete", guild => {
 client.once('reconnecting', () => {
    console.log('Reconnecting!');
    client.guilds.forEach( (guild) => {
+       var guildPrefix = prefix;
        // load prefix from database
-       var guildPrefix = db.loadPrefix(guild.id);
+       db.loadPrefix(guild.id, (doc) => {
+         if (doc == null) return;
+         guildPrefix = doc.prefix;
+         console.log('loaded from database: ' + doc);
+       });
        if (!guildPrefix) guildPrefix = prefix;
        const queueObj = {
          textChannel: null,

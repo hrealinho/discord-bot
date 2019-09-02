@@ -3,7 +3,6 @@
   "author": "Henrique Realinho",
   "description": "test Discord.js discord bot by Henrique Realinho",
   "version": "0.0.1",
-  "main": "src/discord-bot.js",
   "private": true,
   "devDependencies": {
     "mocha": "^5.0.0",
@@ -12,14 +11,12 @@
   },
   "scripts": {
     "start": "node src/discord-bot.js",
-    "prod": "pm2 start src/discord-bot.js",
-    "dev": "nodemon src/discord-bot.js",
-    "test": "exit 1"
+    "production": "pm2 start src/discord-bot.js",
+    "dev": "nodemon src/discord-bot.js"
   },
   "dependencies": {
     "discord.js": "^11.5.1",
     "ffmpeg": "0.0.4",
-    "ffmpeg-binaries": "^4.0.0",
     "fs": "0.0.1-security",
     "mongoose": "^5.6.11",
     "nodemon": "^1.19.1",

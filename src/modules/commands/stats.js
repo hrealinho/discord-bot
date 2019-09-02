@@ -1,4 +1,5 @@
 const { prefix } = require('../../config.json');
+const Discord = require('discord.js');
 const client = require('../../discord-bot.js');
 
 module.exports = {
@@ -15,8 +16,12 @@ module.exports = {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
 
-    const uptime = `My uptime is ${days} days, ${hours} hours, ${minutes} minutes and ${seconds} seconds`;
+    const uptime = `${days} days, ${hours} hours, ${minutes} minutes and ${seconds} seconds`;
+    const cmdEmbed = new Discord.RichEmbed()
+      .setColor('#0099ff')
+      .setTitle('Uptime')
+      .addField('my uptime is', uptime);
 
-    return message.reply(uptime);
+    return message.channel.send(cmdEmbed);
   }
 }

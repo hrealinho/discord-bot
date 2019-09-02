@@ -1,4 +1,4 @@
-
+const Discord = require('discord.js');
 const { prefix } = require('../../config.json');
 
 const Utils = require('../Utils/Utils.js');
@@ -10,21 +10,27 @@ module.exports = {
   guildOnly: true,
   args: false,
   execute(arguments, message, queue) {
-		if (queue.get(message.guild.id).playing) {
-      message.channel.send("Now playing:\n - " + queue.get(message.guild.id).play.name + '\n');
+    var str = "server playlist:\n";
+    if (queue.get(message.guild.id).playing) {
+      str += "Now playing:\n - " + queue.get(message.guild.id).play.name + '\n';
     }
 
-    const songs = queue.get(message.guild.id).songs; // songQueue.get(message.guild.id);
+    const songs = queue.get(message.guild.id).songs;
     if (!songs || songs == [] || Utils.isEmpty(songs)) {
-        return message.channel.send("No song in the playlist.");
+        message.channel.send(str); // print now playing msg before returning
+        return message.channel.send("No song in queue.");
     }
     else {
-        var str = "\n";
-        str += "Queue:\n";
+        str += "\nQueue:\n";
         songs.forEach( (song) => {
           str += " - " + song.name + "\n";
         });
-        message.channel.send(str);
+
+        const cmdEmbed = new Discord.RichEmbed()
+          .setColor('#0099ff')
+          .addField('Playlist', str)
+          .setTimestamp();
+        message.channel.send(cmdEmbed);
     }
 		return;
   }

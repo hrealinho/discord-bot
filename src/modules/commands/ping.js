@@ -1,3 +1,4 @@
+const Discord = require('discord.js');
 const { prefix } = require('../../config.json');
 const client = require('../../discord-bot.js');
 
@@ -9,7 +10,11 @@ module.exports = {
   guildOnly: false,
   args: false,
   execute(arguments, message, queue) {
+    const str = 'my ping to Discord servers is ' + client.ping + 'ms';
+    const cmdEmbed = new Discord.RichEmbed()
+      .setColor('#0099ff')
+      .addField('Ping', str);
 
-    return message.reply('My ping is ' + client.ping + 'ms');
+    return message.channel.send(cmdEmbed);
   }
 }

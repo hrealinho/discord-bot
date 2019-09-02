@@ -10,17 +10,23 @@ module.exports = {
   cooldown: 3,
   args: true,
   execute(arguments, message, queue) {
-    if (arguments.length == 0) {
-      return message.channel.send("Add what?\nUse `" + prefix + "add 'song'`");
-    } else {
-      var songName = Utils.join(arguments);
-      if (!songName) songName = arguments.toString();
+    try {
+      if (arguments.length == 0) {
+        return message.channel.send("Add what?\nUse `" + prefix + "add 'song'`");
+      } else {
+        var songName = Utils.join(arguments);
+        if (!songName) songName = arguments.toString();
 
-      return getSong(message.channel, songName, queue,
-        function callback(song) {
-    			queue.get(message.guild.id).songs.push(song);
-          message.reply("Added " + song.name + " to the playlist.");
-    	});
+        return getSong(message.channel, songName, queue,
+          function callback(song) { // song is an Object with its name and url
+      			queue.get(message.guild.id).songs.push(song);
+            message.reply("Added " + song.name + " to the playlist.");
+            return console.log("Added " + song + " @ " + message.guild);
+      	});
+      }
+    } catch (e) {
+      console.log(e);
+      return;
     }
   }
 }

@@ -21,15 +21,16 @@ var Guilds = mongoose.model('Guild', guildSchema);
 guildSchema.path('guildId').index({ unique: true });
 
 /**
- *
+ * Saves a document to the database given the info.
  * @param {string} guildName -
  * @param {number} guildId -
  * @param {[Object]} songs -
  * @param {string} prefix -
- * @returns the created database document
+ * @returns the created or updated database document
  */
-function save(guildName, guildId, songs, prefix) {
-    if (!guildName || !guildId || !songs || !prefix) {
+function save(guildName, guildId, songs, prefix, callback) {
+    callback = callback || handleError('save fail');
+    if (!guildName || !guildId || !prefix) {
       return handleError('save doc failed');
     }
     // TODO -> check if the doc already exists and if so, save instead of create
@@ -43,11 +44,20 @@ function save(guildName, guildId, songs, prefix) {
           prefix: prefix,
         };
         return Guilds.create(doc, function (err, document) {
-          if (err) handleError(err);
+          if (err) {
+            handleError(err);
+          }
+          return callback(document);
         });
       }
       // found doc
-      return Guilds.updateOne({ guildId: guildId },{ prefix: prefix });
+      return Guilds.updateOne({ guildId: guildId },{ prefix: prefix },
+         function (err, document) {
+            if (err) {
+              handleError(err);
+            }
+            return callback(document);
+      });
     });
 }
 
@@ -71,7 +81,9 @@ function saveMany(documents) {
 function deleteDoc(guildId) {
   return Guilds.deleteOne({ guildId: guildId },
      function (err) {
-      if (err) return handleError(err);
+      if (err) {
+        return handleError(err);
+      }
       // deleted at most one document
       // ...
     });
@@ -80,17 +92,21 @@ function deleteDoc(guildId) {
 /**
  *
  * @param {number} guildId -
+ * @param {function} callback -
  * @returns the prefix for the given guild
  */
-function loadPrefix(guildId) {
-  if (!guildId) return handleError('load prefix fail');
-
-  const doc = Guilds.find({ guildId: guildId },
-     function (err) {
-      if (err) return handleError(err);
-      // ...
-      return doc.prefix;
-    });
+function loadPrefix(guildId, callback) {
+  callback = callback || handleError('loading data error');
+  if (!guildId) {
+    return handleError('load prefix fail');
+  }
+  Guilds.findOne({ 'guildId': guildId }, 'guildId prefix', function (err, doc) {
+    if (err) {
+      return handleError(err);
+    }
+    // success
+    return callback(doc);
+  });
 }
 
 function handleError(error) {

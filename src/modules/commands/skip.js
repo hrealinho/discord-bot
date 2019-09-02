@@ -42,9 +42,9 @@ module.exports = {
   	      queueObj.songs.shift();
   	    }
   	    console.log("Skipping song. @ " + message.channel.guild.name);
-  	    message.channel.send("Skipped.");
+  	    return message.channel.send("Skipped.");
 
-  			return ;
+
       }
 		}
 };
