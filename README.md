@@ -44,15 +44,16 @@ WORKING >
 ## Installation:
  - get npm (https://www.npmjs.com/get-npm);
  - navigate to project root directory;
+ - `$ npm install ffmpeg-binaries`
  - `$ npm install -g ffmpeg`
- - `$ npm install -g opusscript`
+ - `$ npm install node-opus`
  - `$ npm install`
 
 ## Running:
  - `$ npm start`
 
 ## Running for production:
-- `$ npm run production`  uses pm2 (http://pm2.keymetrics.io/)
+- `$ npm run prod`  uses pm2 (http://pm2.keymetrics.io/)
 
 ## Running for development:
   - `$ npm run dev`  uses nodemon (https://nodemon.io/)
@@ -69,12 +70,12 @@ WORKING >
  - To add a command just create a file `command.js` in the commands folder and export an object containing:
 ```JavaScript
 {
-  name: 'command name' e.g. 'quit'
+  name: 'command name' // e.g. 'quit'
   usage: 'command usage' // string describing how the command should be used (optional)
   description: 'string describing what the command does' // command description (optional)
   cooldown: number  // cooldown between calls for this cmd (0 if no cooldown needed)
   args: true if the command needs args, false otherwise  // (optional)
-  guildOnly: true if the command is not supposed to run if invocated from a dm // (optional)
+  guildOnly: true if the command is not supposed to run when invocated from a dm // (optional)
   execute(args, message, queue) { // queue is a Map with Objects described below, message is a Message Object from Discord.js docs and args are the commands arguments if any
     // your command's code
   }
@@ -85,17 +86,13 @@ WORKING >
 
 ```JavaScript
 {
-  textChannel: null,    // Channel object to send messages to in this guild
-  voiceChannel: null,   // VoiceChannel object to join and play in in this guild
-  connection: null,     // the Connection object for that guild
+  textChannel: TextChannel,    // Channel object to send messages to in this guild
+  voiceChannel: VoiceChannel,   // VoiceChannel object to join and play in in this guild
+  connection: Connection,     // the Connection object for that guild
   songs: [],            // song queue
-  play: null,           // song currently playing (Object with name and youtube url (both strings)
+  play: null,           // song currently playing (Object with song name and url (both strings))
   volume: 0,            // volume (number from 1-10)
   playing: false        // true if playing at the moment, false otherwise
 }
 ```
-
-
-
-
 Check discord.js docs (https://discord.js.org/#/docs/) to understand and add to the code or change it.
