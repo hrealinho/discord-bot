@@ -5,8 +5,9 @@
  * @author Henrique Realinho
  */
 const mongoose = require('mongoose');
+const { mongodb_user } = require('../config.json');
 // connect to mongo db atlas
-const db = mongoose.connect('mongodb+srv://app:QB8t39GXqq8lOos8@eu-west-cluster0-vkyik.mongodb.net/test?retryWrites=true&w=majority',
+const db = mongoose.connect('mongodb+srv://' + mongodb_user + '@eu-west-cluster0-vkyik.mongodb.net/test?retryWrites=true&w=majority',
 { useCreateIndex: true, useNewUrlParser: true });
 
 var Schema = mongoose.Schema;
@@ -23,7 +24,7 @@ guildSchema.path('guildId').index({ unique: true });
 /**
  * Saves a document to the database given the info.
  * @param {string} guildName -
- * @param {number} guildId -
+ * @param {string} guildId -
  * @param {[Object]} songs -
  * @param {string} prefix -
  * @returns the created or updated database document
@@ -76,7 +77,7 @@ function saveMany(documents) {
 
 /**
  *
- * @param {number} guildId -
+ * @param {string} guildId -
  */
 function deleteDoc(guildId) {
   return Guilds.deleteOne({ guildId: guildId },
@@ -91,7 +92,7 @@ function deleteDoc(guildId) {
 
 /**
  *
- * @param {number} guildId -
+ * @param {string} guildId -
  * @param {function} callback -
  * @returns the prefix for the given guild
  */

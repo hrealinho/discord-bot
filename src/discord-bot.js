@@ -23,7 +23,7 @@ const {
 const Discord = require('discord.js');
 // OTHER PACKAGES
 const Utils = require('./modules/Utils/Utils.js');
-const db = require('./modules/dev/database.js');
+const db = require('./modules/database.js');
 const cleanup = require('./modules/Utils/cleanup.js').Cleanup(onExit);
 
 

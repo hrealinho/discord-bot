@@ -1,5 +1,6 @@
 const { prefix } = require('../../config.json');
-const db = require('../dev/database.js');
+// uses database - mongodb
+const db = require('../database.js');
 
 module.exports = {
   name: 'leave',
