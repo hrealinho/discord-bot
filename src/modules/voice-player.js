@@ -55,7 +55,7 @@ async function join(channel, callback) {
     channel.join()
         .then( connection => {
         //voiceRecorder.record(channel, connection);
-        // worked
+        // ... worked
         console.log("Successfully connected.");
         return callback(connection);
     }).catch(e => {

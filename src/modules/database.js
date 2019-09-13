@@ -27,6 +27,7 @@ guildSchema.path('guildId').index({ unique: true });
  * @param {string} guildId -
  * @param {[Object]} songs -
  * @param {string} prefix -
+ * @param {function} callback -
  * @returns the created or updated database document
  */
 function save(guildName, guildId, songs, prefix, callback) {
@@ -65,8 +66,10 @@ function save(guildName, guildId, songs, prefix, callback) {
 /**
  *
  * @param {[guildSchema]} documents -
+ * @param {function} callback -
  */
-function saveMany(documents) {
+function saveMany(documents, callback) {
+    callback = callback || handleError('save fail');
   if (!documents) return;
   return Guilds.create(documents, function (err, docs) {
     if (err) handleError(err);
@@ -78,8 +81,10 @@ function saveMany(documents) {
 /**
  *
  * @param {string} guildId -
+ * @param {function} callback - 
  */
-function deleteDoc(guildId) {
+function deleteDoc(guildId, callback) {
+  callback = callback || handleError('save fail');
   return Guilds.deleteOne({ guildId: guildId },
      function (err) {
       if (err) {

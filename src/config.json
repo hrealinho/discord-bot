@@ -3,5 +3,6 @@
   "d_token": "Bot discord token",
   "prefix": "!",
   "oauth": "Bot oauth",
+  "mongodb_user": "MongoDb username",
   "yt_token": "Youtube api token"
 }
